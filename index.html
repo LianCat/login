@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title></title>
+    <link rel="stylesheet" href="css/mui.min.css" />
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript">
+    	
+   		document.addEventListener('plusready', function(){
+   			//console.log("所有plus api都应该在此事件发生后调用，否则会出现plus is undefined。"  			
+   		});  		
+    </script>
+    <style>
+    	body{
+    		font-size:16px;
+    	}
+    	label{
+    		width:10%;!important
+    	}
+    </style>
+</head>
+<body style="margin:3px;">
+		<ul class="mui-table-view" style="margin:0px 0px 30px 0px;border:1px solid #ccc;border-radius:5px;">   
+		    <li class="mui-table-view-cell">
+		    	<div class="mui-input-row">
+		        <label style="width:30%">手机号:</label>
+		        <input id="m1" type="text" class="mui-input-password" placeholder="请输入手机号码">
+		    	</div>		    	
+		    </li>
+		    <li class="mui-table-view-cell">		    	
+		    	<div class="mui-input-row">
+		        <label>验证码:</label>
+		        <input id="m2" style="width:30%;float:left" type="text" class="mui-input-password" placeholder="验证码">
+		        	<input id="btn0" style="width:33%;border:1px solid #f0ad4e" class="mui-btn mui-btn-warning mui-btn-outlined" type="button" value="获取验证码" />
+		    	</div>
+		    </li>
+		</ul>	   
+		<ul class="mui-table-view" style="margin-bottom:20px;border:1px solid #ccc;border-radius:5px;">
+	    <li class="mui-table-view-cell">
+	    	<div class="mui-input-row">
+	        <label>登陆密码:</label>
+	        <input id="m3" type="password" class="mui-input-password" placeholder="请输入密码">
+	    	</div>
+	    </li>
+	    <li class="mui-table-view-cell">
+	    	<div class="mui-input-row">
+	        <label>交易密码:</label>
+	        <input id="m4" type="password" class="mui-input-password" placeholder="请输入交易密码">
+	    	</div>
+	    </li>
+	    <li class="mui-table-view-cell">
+	    	<div class="mui-input-row">
+	        <label>推荐手机:</label>
+	        <div id="m5" class="mui-input-password" style="width:50%;height:35px;float:left;line-height:35px;" type="password" class="mui-input-password" placeholder="推荐人手机"></div>
+	    	</div>
+	    </li>
+		</ul>			
+		<div class="mui-input-row" style="width:80%;margin:20px auto;">
+		<button id="btn" class="mui-btn mui-btn-primary" style="width:100%;padding:15px 0;">注册</button>
+		</div>
+		
+		<div class="mui-input-row" style="margin:10px auto;width:80%;">
+		<a href="download.html" class="mui-btn mui-btn-primary" style="width:100%;padding:15px 0;">点击下载APP</a>
+		</div>
+		<div id="show" class="mui-input-row" style="width:50%;margin:0 auto;padding:20px 0;text-align: center;display:none;background:#555555;color:#fff;border-radius:10px;opacity:0.8;"></div>
+</body>
+<script>
+		$(function(){			
+			var wait=60;			
+			function time(o) {  
+			        if (wait == 0) {  
+			            o.removeAttribute("disabled");            
+			            o.value="获取验证码";  
+			            wait = 60;
+			        } else {  
+			            o.setAttribute("disabled", true);  
+			            o.value="重新发送" + wait ;  
+			            wait--;			            
+			            setTimeout(function() {  
+			                time(o)  
+			            },  
+			            1000)  
+			        }  
+			    };			  		
+	         $("#btn0").click(function(){
+	         	var m1 = $('#m1').val();
+	         	if(m1 == ''){
+	         		$('#show').html('手机号码不能为空').stop().fadeIn(100)
+	         		$('#show').fadeOut(2000)
+	         	}else{
+	         		time(this);
+	         		$.ajax({
+							type:'GET',
+							url:'http://ds.jiepaypal.cn:8765/v1.0/notice/sms/send?phone='+m1,
+							datatype:'json',
+							success:function(data){
+								console.log(data)
+								$('#show').html('成功获取验证码').fadeIn(100)
+	         					$('#show').fadeOut(2000)
+							},
+							error:function(data){
+								$('#show').html('获取验证码失败').fadeIn(100)
+	         					$('#show').fadeOut(2000)
+							}
+						})
+	         	}						
+	         })			
+			$('#btn').click(function(){
+				var m1 = $('#m1').val();
+				var m2 = $('#m2').val();
+				var m3 = $('#m3').val();
+				var m4 = $('#m4').val();
+				var m5 = $("#m5").val();
+				console.log(m5)
+				if(m1=="" || m2=="" || m3==""|| m4==""){
+					$('#show').stop().html('输入有误').fadeIn(100)
+	         		$('#show').fadeOut(2000)
+				}else{
+					$.ajax({
+					url:'http://ds.jiepaypal.cn:8765/v1.0/user/register',
+					datatype:'json',
+					type:'POST',
+					data:{
+						phone:m1,
+						vericode:m2,
+						password:m3,
+						paypass:m4,
+						invitecode:m5
+					},
+					success:function(data){
+						console.log('成功')
+						console.log(data)
+						if(data.resp_code == "000008"){
+							$('#show').stop().fadeIn(100).html("用户已经注册")
+							$('#show').fadeOut(2000).html("用户已经注册")
+							$('#m1').val("");
+							$('#m2').val("");
+							$('#m3').val("");
+							$('#m4').val("");
+							return
+						}
+						if(data.resp_code == "000002"){
+							$('#show').stop().fadeIn(100).html("验证码错误")
+							$('#show').fadeOut(2000).html("验证码错误")
+							$('#m1').val("");
+							$('#m2').val("");
+							$('#m3').val("");
+							$('#m4').val("");
+							return 
+						}
+						if(data.resp_code == "000000"){
+							$('#show').stop().fadeIn(100).html("注册成功")
+							$('#show').fadeOut(2000).html("注册成功")
+							$('#m1').val("");
+							$('#m2').val("");
+							$('#m3').val("");
+							$('#m4').val("");
+							return 
+						}
+					},
+					error:function(data){
+						console.log('失败')
+					}
+				})
+				}			
+			})
+		})		
+	</script>
+</html>
